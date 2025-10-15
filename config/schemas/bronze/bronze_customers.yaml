@@ -1,0 +1,42 @@
+# Bronze Layer: Customers Schema Contract
+# Validates column existence only (all data stored as strings)
+# Type casting happens in Silver layer
+
+table_name: bronze_customers
+layer: bronze
+
+# Required source columns (stored as strings in Bronze)
+required_columns:
+  - name: customer_id
+    nullable: false
+    
+  - name: name
+    nullable: true
+    
+  - name: age
+    nullable: true
+    
+  - name: gender
+    nullable: true
+    
+  - name: email
+    nullable: true
+    
+  - name: phone
+    nullable: true
+    
+  - name: location
+    nullable: true
+    
+  - name: join_date
+    nullable: true
+    
+  - name: customer_type
+    nullable: true
+    
+metadata_columns:
+  - ingestion_timestamp
+  - ingestion_date
+  - source_system
+  - process_id
+  - source_file_name

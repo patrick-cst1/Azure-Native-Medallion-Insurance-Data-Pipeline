@@ -1,0 +1,211 @@
+name: Deploy Azure-Native Medallion Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AZURE_RESOURCE_GROUP: rg-insurance-ml-pipeline
+  AZURE_LOCATION: eastasia
+  ENVIRONMENT: dev
+  BASE_NAME: insurance-ml
+
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    outputs:
+      storageAccountName: ${{ steps.deploy.outputs.storageAccountName }}
+      synapseWorkspaceName: ${{ steps.deploy.outputs.synapseWorkspaceName }}
+      sparkPoolName: ${{ steps.deploy.outputs.sparkPoolName }}
+      filesContainerName: ${{ steps.deploy.outputs.filesContainerName }}
+      tablesContainerName: ${{ steps.deploy.outputs.tablesContainerName }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create Resource Group
+        run: |
+          az group create \
+            --name ${{ env.AZURE_RESOURCE_GROUP }} \
+            --location ${{ env.AZURE_LOCATION }}
+
+      - name: Deploy Bicep Infrastructure
+        id: deploy
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            set -e
+            DEPLOYMENT_NAME="main-$(date +%s)"
+            
+            echo "Validating Bicep template..."
+            az deployment group validate \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --template-file ./infrastructure/main.bicep \
+              --parameters baseName=${{ env.BASE_NAME }} environmentName=${{ env.ENVIRONMENT }} location=${{ env.AZURE_LOCATION }}
+            
+            echo "Deploying Bicep template..."
+            az deployment group create \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --name "$DEPLOYMENT_NAME" \
+              --template-file ./infrastructure/main.bicep \
+              --parameters baseName=${{ env.BASE_NAME }} environmentName=${{ env.ENVIRONMENT }} location=${{ env.AZURE_LOCATION }}
+
+            echo "storageAccountName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.storageAccountName.value" -o tsv)" >> $GITHUB_OUTPUT
+            echo "synapseWorkspaceName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.synapseWorkspaceName.value" -o tsv)" >> $GITHUB_OUTPUT
+            echo "sparkPoolName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.sparkPoolName.value" -o tsv)" >> $GITHUB_OUTPUT
+            echo "filesContainerName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.filesContainerName.value" -o tsv)" >> $GITHUB_OUTPUT
+            echo "tablesContainerName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.tablesContainerName.value" -o tsv)" >> $GITHUB_OUTPUT
+
+      - name: Display Infrastructure Outputs
+        run: |
+          echo "Storage Account: ${{ steps.deploy.outputs.storageAccountName }}"
+          echo "Synapse Workspace: ${{ steps.deploy.outputs.synapseWorkspaceName }}"
+          echo "Spark Pool: ${{ steps.deploy.outputs.sparkPoolName }}"
+
+  upload-data-and-schemas:
+    runs-on: ubuntu-latest
+    needs: deploy-infrastructure
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Upload sample data to ADLS
+        run: |
+          echo "Uploading sample CSV files..."
+          az storage fs directory upload \
+            --account-name ${{ needs.deploy-infrastructure.outputs.storageAccountName }} \
+            --file-system ${{ needs.deploy-infrastructure.outputs.filesContainerName }} \
+            --source ./data/samples \
+            --destination samples \
+            --recursive \
+            --auth-mode login
+
+      - name: Upload schema files to ADLS
+        run: |
+          echo "Uploading YAML schema files..."
+          az storage fs directory upload \
+            --account-name ${{ needs.deploy-infrastructure.outputs.storageAccountName }} \
+            --file-system ${{ needs.deploy-infrastructure.outputs.filesContainerName }} \
+            --source ./config/schemas \
+            --destination config/schemas \
+            --recursive \
+            --auth-mode login
+
+  deploy-synapse-artifacts:
+    runs-on: ubuntu-latest
+    needs: [deploy-infrastructure, upload-data-and-schemas]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Update Notebook Storage Account Configuration
+        run: |
+          echo "Updating notebooks with storage account name..."
+          python scripts/update_notebook_config.py ${{ needs.deploy-infrastructure.outputs.storageAccountName }}
+
+      - name: Import Synapse Notebooks
+        run: |
+          WORKSPACE=${{ needs.deploy-infrastructure.outputs.synapseWorkspaceName }}
+          
+          echo "Importing Bronze notebooks..."
+          az synapse notebook import --workspace-name $WORKSPACE --name bronze_ingest_policies --file @synapse/notebooks/bronze_ingest_policies.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          az synapse notebook import --workspace-name $WORKSPACE --name bronze_ingest_claims --file @synapse/notebooks/bronze_ingest_claims.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          az synapse notebook import --workspace-name $WORKSPACE --name bronze_ingest_customers --file @synapse/notebooks/bronze_ingest_customers.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          az synapse notebook import --workspace-name $WORKSPACE --name bronze_ingest_agents --file @synapse/notebooks/bronze_ingest_agents.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          
+          echo "Importing Silver notebooks..."
+          az synapse notebook import --workspace-name $WORKSPACE --name silver_clean_policies --file @synapse/notebooks/silver_clean_policies.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          az synapse notebook import --workspace-name $WORKSPACE --name silver_clean_claims --file @synapse/notebooks/silver_clean_claims.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          az synapse notebook import --workspace-name $WORKSPACE --name silver_clean_customers --file @synapse/notebooks/silver_clean_customers.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          az synapse notebook import --workspace-name $WORKSPACE --name silver_clean_agents --file @synapse/notebooks/silver_clean_agents.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          
+          echo "Importing Gold notebooks..."
+          az synapse notebook import --workspace-name $WORKSPACE --name gold_create_claims_features --file @synapse/notebooks/gold_create_claims_features.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          az synapse notebook import --workspace-name $WORKSPACE --name gold_create_customer_features --file @synapse/notebooks/gold_create_customer_features.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          az synapse notebook import --workspace-name $WORKSPACE --name gold_create_risk_features --file @synapse/notebooks/gold_create_risk_features.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+          az synapse notebook import --workspace-name $WORKSPACE --name gold_create_monthly_claims_summary --file @synapse/notebooks/gold_create_monthly_claims_summary.ipynb --spark-pool-name ${{ needs.deploy-infrastructure.outputs.sparkPoolName }} || true
+
+      - name: Create Synapse Pipeline
+        run: |
+          WORKSPACE=${{ needs.deploy-infrastructure.outputs.synapseWorkspaceName }}
+          
+          echo "Creating master batch pipeline..."
+          az synapse pipeline create \
+            --workspace-name $WORKSPACE \
+            --name master_batch_pipeline \
+            --file @synapse/pipelines/master_batch_pipeline.json || true
+
+      - name: Create and Start Daily Trigger
+        run: |
+          WORKSPACE=${{ needs.deploy-infrastructure.outputs.synapseWorkspaceName }}
+          
+          echo "Creating daily trigger..."
+          az synapse trigger create \
+            --workspace-name $WORKSPACE \
+            --name DailySchedule \
+            --file @synapse/pipelines/triggers/daily_trigger.json || true
+          
+          echo "Starting daily trigger..."
+          az synapse trigger start \
+            --workspace-name $WORKSPACE \
+            --name DailySchedule || true
+
+  post-deployment:
+    runs-on: ubuntu-latest
+    needs: [deploy-infrastructure, upload-data-and-schemas, deploy-synapse-artifacts]
+    
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Display Deployment Summary
+        run: |
+          echo "=========================================="
+          echo "✅ Deployment Completed Successfully!"
+          echo "=========================================="
+          echo ""
+          echo "📦 Resources Created:"
+          echo "  - Synapse Workspace: ${{ needs.deploy-infrastructure.outputs.synapseWorkspaceName }}"
+          echo "  - Storage Account: ${{ needs.deploy-infrastructure.outputs.storageAccountName }}"
+          echo "  - Spark Pool: ${{ needs.deploy-infrastructure.outputs.sparkPoolName }}"
+          echo ""
+          echo "📊 Data Uploaded:"
+          echo "  - Sample CSVs: abfss://${{ needs.deploy-infrastructure.outputs.filesContainerName }}@${{ needs.deploy-infrastructure.outputs.storageAccountName }}.dfs.core.windows.net/samples/"
+          echo "  - YAML Schemas: abfss://${{ needs.deploy-infrastructure.outputs.filesContainerName }}@${{ needs.deploy-infrastructure.outputs.storageAccountName }}.dfs.core.windows.net/config/schemas/"
+          echo ""
+          echo "🚀 Next Steps:"
+          echo "  1. Navigate to Azure Portal → Synapse Workspace"
+          echo "  2. Run 'master_batch_pipeline' manually or wait for daily trigger (2:00 UTC)"
+          echo "  3. Verify Delta tables in ADLS: bronze_*, silver_*, gold_*"
+          echo ""
+          echo "💰 Cost Management:"
+          echo "  - Spark Pool auto-pauses after 15 minutes of inactivity"
+          echo "  - To delete all resources: az group delete --name ${{ env.AZURE_RESOURCE_GROUP }}"

@@ -1,0 +1,39 @@
+# Bronze Layer: Claims Schema Contract
+# Validates column existence only (all data stored as strings)
+# Type casting happens in Silver layer
+
+table_name: bronze_claims
+layer: bronze
+
+# Required source columns (stored as strings in Bronze)
+required_columns:
+  - name: claim_id
+    nullable: false
+    
+  - name: policy_id
+    nullable: false
+    
+  - name: claim_amount
+    nullable: false
+    
+  - name: claim_date
+    nullable: true
+    
+  - name: claim_status
+    nullable: true
+    
+  - name: claim_type
+    nullable: true
+    
+  - name: customer_id
+    nullable: true
+    
+  - name: description
+    nullable: true
+
+metadata_columns:
+  - ingestion_timestamp
+  - ingestion_date
+  - source_system
+  - process_id
+  - source_file_name

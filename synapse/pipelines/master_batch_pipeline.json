@@ -1,0 +1,248 @@
+{
+  "name": "master_batch_pipeline",
+  "properties": {
+    "description": "Master orchestration for Bronze->Silver->Gold batch processing",
+    "activities": [
+      {
+        "name": "Bronze_Ingestion_Policies",
+        "type": "SynapseNotebook",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0:10:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "bronze_ingest_policies",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Bronze_Ingestion_Claims",
+        "type": "SynapseNotebook",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0:10:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "bronze_ingest_claims",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Bronze_Ingestion_Customers",
+        "type": "SynapseNotebook",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0:10:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "bronze_ingest_customers",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Bronze_Ingestion_Agents",
+        "type": "SynapseNotebook",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0:10:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "bronze_ingest_agents",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Silver_Clean_Policies",
+        "type": "SynapseNotebook",
+        "dependsOn": [
+          {
+            "activity": "Bronze_Ingestion_Policies",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": {
+          "timeout": "0:15:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "silver_clean_policies",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Silver_Clean_Claims",
+        "type": "SynapseNotebook",
+        "dependsOn": [
+          {
+            "activity": "Bronze_Ingestion_Claims",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": {
+          "timeout": "0:15:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "silver_clean_claims",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Silver_Clean_Customers",
+        "type": "SynapseNotebook",
+        "dependsOn": [
+          {
+            "activity": "Bronze_Ingestion_Customers",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": {
+          "timeout": "0:15:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "silver_clean_customers",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Silver_Clean_Agents",
+        "type": "SynapseNotebook",
+        "dependsOn": [
+          {
+            "activity": "Bronze_Ingestion_Agents",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": {
+          "timeout": "0:15:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "silver_clean_agents",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Gold_Claims_Features",
+        "type": "SynapseNotebook",
+        "dependsOn": [
+          {
+            "activity": "Silver_Clean_Claims",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": {
+          "timeout": "0:20:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "gold_create_claims_features",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Gold_Customer_Features",
+        "type": "SynapseNotebook",
+        "dependsOn": [
+          {
+            "activity": "Silver_Clean_Customers",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Silver_Clean_Policies",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": {
+          "timeout": "0:20:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "gold_create_customer_features",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Gold_Risk_Features",
+        "type": "SynapseNotebook",
+        "dependsOn": [
+          {
+            "activity": "Gold_Claims_Features",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Gold_Customer_Features",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": {
+          "timeout": "0:20:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "gold_create_risk_features",
+            "type": "NotebookReference"
+          }
+        }
+      },
+      {
+        "name": "Gold_Monthly_Claims_Summary",
+        "type": "SynapseNotebook",
+        "dependsOn": [
+          {
+            "activity": "Silver_Clean_Claims",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": {
+          "timeout": "0:20:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebook": {
+            "referenceName": "gold_create_monthly_claims_summary",
+            "type": "NotebookReference"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+# Bronze Layer: Policies Schema Contract
+# Validates column existence only (all data stored as strings)
+# Type casting happens in Silver layer
+
+table_name: bronze_policies
+layer: bronze
+
+# Required source columns (stored as strings in Bronze)
+required_columns:
+  - name: policy_id
+    nullable: false
+    
+  - name: customer_id
+    nullable: false
+    
+  - name: product_type
+    nullable: true
+    
+  - name: premium
+    nullable: true
+    
+  - name: status
+    nullable: true
+    
+  - name: start_date
+    nullable: true
+    
+  - name: end_date
+    nullable: true
+    
+  - name: agent_id
+    nullable: true
+    
+  - name: coverage_amount
+    nullable: true
+
+# Metadata columns (auto-added during ingestion)
+metadata_columns:
+  - ingestion_timestamp
+  - ingestion_date
+  - source_system
+  - process_id
+  - source_file_name
