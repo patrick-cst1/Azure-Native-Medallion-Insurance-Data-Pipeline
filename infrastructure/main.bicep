@@ -23,8 +23,9 @@ param sparkPoolAutoScale bool = true
 var uniqueSuffix = uniqueString(resourceGroup().id)
 var storageAccountName = replace('${baseName}${environmentName}${uniqueSuffix}', '-', '')
 var synapseWorkspaceName = 'syn-${baseName}-${environmentName}-${uniqueSuffix}'
-// Key Vault name must be <= 24 chars, use abbreviated naming
-var keyVaultName = 'kv-${replace(baseName, '-', '')}${environmentName}-${take(uniqueSuffix, 6)}'
+// Key Vault name must be alphanumeric and <= 24 chars. Remove hyphens and trim length.
+var keyVaultNameRaw = 'kv${replace(baseName, '-', '')}${environmentName}${take(uniqueSuffix, 6)}'
+var keyVaultName = take(keyVaultNameRaw, 24)
 var sparkPoolName = 'sparkpool${environmentName}'
 
 // Storage Account (ADLS Gen2)
@@ -40,7 +41,7 @@ module storage 'modules/storage.bicep' = {
 module keyVault 'modules/keyvault.bicep' = {
   name: 'keyvault-deployment'
   params: {
-    keyVaultName: keyVaultName  // Already trimmed to max 24 chars in variable definition
+    keyVaultName: keyVaultName  // Trimmed to max 24 chars
     location: location
   }
 }

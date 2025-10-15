@@ -84,27 +84,39 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Install Azure CLI extensions
+        run: |
+          az extension add -n storage-blob-preview -y || az extension update -n storage-blob-preview
+          az extension add -n synapse -y || az extension update -n synapse
+
+      - name: Get storage account key
+        run: |
+          echo "ACCOUNT_KEY=$(az storage account keys list \
+            --account-name ${{ needs.deploy-infrastructure.outputs.storageAccountName }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query \"[0].value\" -o tsv)" >> $GITHUB_ENV
+
       - name: Upload sample data to ADLS
         run: |
           echo "Uploading sample CSV files..."
           az storage fs directory upload \
             --account-name ${{ needs.deploy-infrastructure.outputs.storageAccountName }} \
+            --account-key $ACCOUNT_KEY \
             --file-system ${{ needs.deploy-infrastructure.outputs.filesContainerName }} \
             --source ./data/samples \
             --destination samples \
-            --recursive \
-            --auth-mode login
+            --recursive
 
       - name: Upload schema files to ADLS
         run: |
           echo "Uploading YAML schema files..."
           az storage fs directory upload \
             --account-name ${{ needs.deploy-infrastructure.outputs.storageAccountName }} \
+            --account-key $ACCOUNT_KEY \
             --file-system ${{ needs.deploy-infrastructure.outputs.filesContainerName }} \
             --source ./config/schemas \
             --destination config/schemas \
-            --recursive \
-            --auth-mode login
+            --recursive
 
   deploy-synapse-artifacts:
     runs-on: ubuntu-latest
@@ -118,6 +130,10 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install Azure CLI extensions (synapse)
+        run: |
+          az extension add -n synapse -y || az extension update -n synapse
 
       - name: Setup Python
         uses: actions/setup-python@v4
