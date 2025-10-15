@@ -41,12 +41,10 @@ business_columns:
     type: string
     nullable: true
     transformation: trim
-
-# Technical columns
-technical_columns:
+    
   - name: customer_id
     type: string
-    nullable: true
+    nullable: false
 
 # SCD Type 2 columns (auto-added)
 scd_columns:

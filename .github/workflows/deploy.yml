@@ -180,12 +180,18 @@ jobs:
       - name: Create and Start Daily Trigger
         run: |
           WORKSPACE=${{ needs.deploy-infrastructure.outputs.synapseWorkspaceName }}
+          TRIGGER_FILE="synapse/pipelines/triggers/daily_trigger.json"
+          
+          if [ ! -f "$TRIGGER_FILE" ]; then
+            echo "Error: Trigger file not found at $TRIGGER_FILE"
+            exit 1
+          fi
           
           echo "Creating daily trigger..."
           az synapse trigger create \
             --workspace-name $WORKSPACE \
             --name DailySchedule \
-            --file @synapse/pipelines/triggers/daily_trigger.json || true
+            --file @"$TRIGGER_FILE" || true
           
           echo "Starting daily trigger..."
           az synapse trigger start \

@@ -21,12 +21,11 @@ param sparkPoolAutoScale bool = true
 
 // Variables
 var uniqueSuffix = uniqueString(resourceGroup().id)
-var storageAccountName = replace('${baseName}${environmentName}${uniqueSuffix}', '-', '')
-var synapseWorkspaceName = 'syn-${baseName}-${environmentName}-${uniqueSuffix}'
-// Key Vault name must be alphanumeric and <= 24 chars. Remove hyphens and trim length.
-var keyVaultNameRaw = 'kv${replace(baseName, '-', '')}${environmentName}${take(uniqueSuffix, 6)}'
-var keyVaultName = take(keyVaultNameRaw, 24)
-var sparkPoolName = 'sparkpool${environmentName}'
+var storageAccountName = replace('${baseName}st${environmentName}${uniqueSuffix}', '-', '')
+var synapseWorkspaceName = '${baseName}-syn-${environmentName}-${take(uniqueSuffix, 8)}'
+var keyVaultNameRaw = '${baseName}-kv-${environmentName}-${take(uniqueSuffix, 6)}'
+var keyVaultName = replace(take(keyVaultNameRaw, 24), '-', '')
+var sparkPoolName = '${baseName}-spark-${environmentName}'
 
 // Storage Account (ADLS Gen2)
 module storage 'modules/storage.bicep' = {

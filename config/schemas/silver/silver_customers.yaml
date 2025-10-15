@@ -19,7 +19,7 @@ business_columns:
     
   - name: age
     type: integer
-    nullable: false
+    nullable: true
     validation:
       - rule: greater_than
         value: 0
