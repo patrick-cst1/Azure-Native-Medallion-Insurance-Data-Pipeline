@@ -88,12 +88,36 @@ jobs:
               --parameters baseName=${{ env.BASE_NAME }} environmentName=${{ env.ENVIRONMENT }} location=${{ env.AZURE_LOCATION }}
             
             echo "Deploying Bicep template..."
+            set +e
             az deployment group create \
               --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
               --name "$DEPLOYMENT_NAME" \
               --template-file ./infrastructure/main.bicep \
               --parameters baseName=${{ env.BASE_NAME }} environmentName=${{ env.ENVIRONMENT }} location=${{ env.AZURE_LOCATION }}
+            EXIT_CODE=$?
+            set -e
 
+            if [ $EXIT_CODE -ne 0 ]; then
+              echo "Deployment failed. Fetching detailed operations..."
+              echo "==== Deployment Summary ===="
+              az deployment group show \
+                --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+                --name "$DEPLOYMENT_NAME" -o jsonc || true
+
+              echo "==== All Operations ===="
+              az deployment operation group list \
+                --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+                --name "$DEPLOYMENT_NAME" -o jsonc || true
+
+              echo "==== Failed Operations Only ===="
+              az deployment operation group list \
+                --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+                --name "$DEPLOYMENT_NAME" \
+                --query "[?properties.provisioningState=='Failed']" -o jsonc || true
+
+              exit $EXIT_CODE
+            fi
+            
             echo "storageAccountName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.storageAccountName.value" -o tsv)" >> $GITHUB_OUTPUT
             echo "synapseWorkspaceName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.synapseWorkspaceName.value" -o tsv)" >> $GITHUB_OUTPUT
             echo "sparkPoolName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.sparkPoolName.value" -o tsv)" >> $GITHUB_OUTPUT
