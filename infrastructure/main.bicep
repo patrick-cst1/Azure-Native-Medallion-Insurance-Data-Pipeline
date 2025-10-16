@@ -19,6 +19,9 @@ param sparkPoolSize string = 'Small'
 @description('Enable Spark Pool auto-scale')
 param sparkPoolAutoScale bool = true
 
+@description('Optional list of AAD Object IDs (users/groups/apps) to grant RBAC on Storage and Key Vault for portal access and authoring')
+param additionalPrincipalIds array = []
+
 // Variables - Standardized Naming Convention
 // Pattern: {baseName}-{resourceType}-{environment}-{uniqueSuffix}
 // All names compliant with Azure naming restrictions (alphanumeric, lengths, etc.)
@@ -70,6 +73,7 @@ module roles 'modules/roles.bicep' = {
     synapsePrincipalId: synapse.outputs.synapsePrincipalId
     storageAccountId: storage.outputs.storageAccountId
     keyVaultName: keyVault.outputs.keyVaultName
+    additionalPrincipalIds: additionalPrincipalIds
   }
 }
 

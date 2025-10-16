@@ -9,6 +9,9 @@ param storageAccountId string
 @description('Key Vault Name')
 param keyVaultName string
 
+@description('Optional list of extra AAD Object IDs (Users/Groups/SPs) to grant data-plane access to Storage and Key Vault')
+param additionalPrincipalIds array = []
+
 // Role Definition IDs (built-in Azure roles)
 var storageBlobDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
 var keyVaultSecretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
@@ -44,6 +47,26 @@ resource synapseKeyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@
     principalType: 'ServicePrincipal'
   }
 }
+
+// Grant provided users/groups/SPs: Storage Blob Data Contributor on Storage Account
+resource extraStorageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for objectId in additionalPrincipalIds: {
+  name: guid(objectId, storageAccountId, storageBlobDataContributorRoleId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
+    principalId: objectId
+  }
+}]
+
+// Grant provided users/groups/SPs: Key Vault Secrets User on Key Vault
+resource extraKeyVaultRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for objectId in additionalPrincipalIds: {
+  name: guid(objectId, keyVault.id, keyVaultSecretsUserRoleId)
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
+    principalId: objectId
+  }
+}]
 
 // Outputs
 output storageBlobDataContributorAssigned bool = true

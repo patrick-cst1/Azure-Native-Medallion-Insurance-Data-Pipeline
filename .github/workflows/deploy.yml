@@ -88,7 +88,7 @@ jobs:
             az deployment group validate \
               --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
               --template-file ./infrastructure/main.bicep \
-              --parameters baseName=${{ env.BASE_NAME }} environmentName=${{ env.ENVIRONMENT }} location=${{ env.AZURE_LOCATION }}
+              --parameters baseName=${{ env.BASE_NAME }} environmentName=${{ env.ENVIRONMENT }} location=${{ env.AZURE_LOCATION }} additionalPrincipalIds='["${{ secrets.AAD_OBJECT_ID }}"]'
             
             echo "Deploying Bicep template..."
             set +e
@@ -96,7 +96,7 @@ jobs:
               --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
               --name "$DEPLOYMENT_NAME" \
               --template-file ./infrastructure/main.bicep \
-              --parameters baseName=${{ env.BASE_NAME }} environmentName=${{ env.ENVIRONMENT }} location=${{ env.AZURE_LOCATION }}
+              --parameters baseName=${{ env.BASE_NAME }} environmentName=${{ env.ENVIRONMENT }} location=${{ env.AZURE_LOCATION }} additionalPrincipalIds='["${{ secrets.AAD_OBJECT_ID }}"]'
             EXIT_CODE=$?
             set -e
 
