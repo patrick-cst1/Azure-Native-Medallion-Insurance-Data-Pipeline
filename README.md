@@ -79,7 +79,7 @@ Azure-Native-Medallion-Insurance-Data-Pipeline/
 
 ```bash
 az ad sp create-for-rbac \
-  --name "github-actions-insurance-ml" \
+  --name "github-actions-insml" \
   --role Contributor \
   --scopes /subscriptions/{your-subscription-id} \
   --sdk-auth
@@ -165,7 +165,7 @@ git push origin main
 ### Infrastructure Parameters
 
 Edit `infrastructure/main.bicep` parameters:
-- `baseName`: Resource naming prefix (default: `insurance-ml`)
+- `baseName`: Resource naming prefix (default: `insml`)
 - `location`: Azure region (default: resource group location)
 - `sparkPoolSize`: Small/Medium/Large (default: `Small`)
 - `sparkPoolAutoScale`: Enable/disable auto-scaling (default: `true`)

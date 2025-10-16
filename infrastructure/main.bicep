@@ -4,7 +4,7 @@
 // ========================================
 
 @description('Base name for all resources')
-param baseName string = 'insurance-ml'
+param baseName string = 'insml'
 
 @description('Environment name (dev, staging, prod)')
 param environmentName string = 'dev'
@@ -23,9 +23,10 @@ param sparkPoolAutoScale bool = true
 // Pattern: {baseName}-{resourceType}-{environment}-{uniqueSuffix}
 // All names compliant with Azure naming restrictions (alphanumeric, lengths, etc.)
 var uniqueSuffix = take(uniqueString(resourceGroup().id), 6)
-var storageAccountName = take('${baseName}st${environmentName}${uniqueSuffix}', 24)  // Max 24 chars, alphanumeric only
+var baseNameClean = replace(baseName, '-', '')  // Remove hyphens for storage/keyvault (alphanumeric only)
+var storageAccountName = take('${baseNameClean}st${environmentName}${uniqueSuffix}', 24)  // Max 24 chars, alphanumeric only
 var synapseWorkspaceName = '${baseName}-syn-${environmentName}-${uniqueSuffix}'     // Synapse allows hyphens
-var keyVaultName = take('${baseName}kv${environmentName}${uniqueSuffix}', 24)       // Max 24 chars, alphanumeric only
+var keyVaultName = take('${baseNameClean}kv${environmentName}${uniqueSuffix}', 24)       // Max 24 chars, alphanumeric only
 var sparkPoolName = '${baseName}-spark-${environmentName}'                          // Standard pattern for Spark
 
 // Storage Account (ADLS Gen2)

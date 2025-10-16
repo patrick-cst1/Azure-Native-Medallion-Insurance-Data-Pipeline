@@ -11,7 +11,7 @@ env:
   AZURE_RESOURCE_GROUP: rg-insurance-ml-pipeline
   AZURE_LOCATION: eastasia
   ENVIRONMENT: dev
-  BASE_NAME: insurance-ml
+  BASE_NAME: insml
 
 jobs:
   deploy-infrastructure:
