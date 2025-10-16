@@ -23,30 +23,50 @@ def update_notebook_storage_account(notebook_path: Path, storage_account_name: s
         True if updated, False otherwise
     """
     try:
+        # Try JSON notebook first
         with open(notebook_path, 'r', encoding='utf-8') as f:
-            notebook_data = json.load(f)
+            content = f.read()
         
-        updated = False
-        for cell in notebook_data.get('cells', []):
-            if cell.get('cell_type') == 'code':
-                source = cell.get('source', [])
-                new_source = []
-                for line in source:
-                    if '<storage-account-name>' in line:
-                        line = line.replace('<storage-account-name>', storage_account_name)
-                        updated = True
-                    new_source.append(line)
-                cell['source'] = new_source
-        
-        if updated:
-            with open(notebook_path, 'w', encoding='utf-8') as f:
-                json.dump(notebook_data, f, indent=2, ensure_ascii=False)
-            print(f"✓ Updated: {notebook_path.name}")
-            return True
-        else:
-            print(f"  Skipped: {notebook_path.name} (no placeholder found)")
-            return False
+        try:
+            notebook_data = json.loads(content)
+            updated = False
+            for cell in notebook_data.get('cells', []):
+                if cell.get('cell_type') == 'code':
+                    source = cell.get('source', [])
+                    new_source = []
+                    for line in source:
+                        if '<storage-account-name>' in line:
+                            line = line.replace('<storage-account-name>', storage_account_name)
+                            updated = True
+                        new_source.append(line)
+                    cell['source'] = new_source
             
+            if updated:
+                with open(notebook_path, 'w', encoding='utf-8') as f:
+                    json.dump(notebook_data, f, indent=2, ensure_ascii=False)
+                print(f"✓ Updated: {notebook_path.name} (json)")
+                return True
+            else:
+                # Fallback to raw text replacement path
+                if '<storage-account-name>' in content:
+                    new_content = content.replace('<storage-account-name>', storage_account_name)
+                    with open(notebook_path, 'w', encoding='utf-8') as f:
+                        f.write(new_content)
+                    print(f"✓ Updated: {notebook_path.name} (raw)")
+                    return True
+                print(f"  Skipped: {notebook_path.name} (no placeholder found)")
+                return False
+        except json.JSONDecodeError:
+            # Not a JSON notebook; perform raw replacement (e.g., VSCode.Cell formatted files)
+            if '<storage-account-name>' in content:
+                new_content = content.replace('<storage-account-name>', storage_account_name)
+                with open(notebook_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print(f"✓ Updated: {notebook_path.name} (raw)")
+                return True
+            else:
+                print(f"  Skipped: {notebook_path.name} (no placeholder found)")
+                return False
     except Exception as e:
         print(f"✗ Error updating {notebook_path.name}: {str(e)}")
         return False

@@ -25,6 +25,10 @@ param sparkPoolSize string
 @description('Enable Spark Pool auto-scale')
 param sparkPoolAutoScale bool
 
+@description('Optional SQL administrator login password (secure). If not provided, deployment will fail in strict environments; recommended to pass via parameters file.')
+@secure()
+param sqlAdministratorLoginPassword string = ''
+
 // Synapse Workspace
 resource synapseWorkspace 'Microsoft.Synapse/workspaces@2021-06-01' = {
   name: synapseWorkspaceName
@@ -34,12 +38,13 @@ resource synapseWorkspace 'Microsoft.Synapse/workspaces@2021-06-01' = {
   }
   properties: {
     defaultDataLakeStorage: {
-      accountUrl: 'https://${storageAccountName}.dfs.core.windows.net'
+      accountUrl: 'https://${storageAccountName}.dfs.${environment().suffixes.storage}'
       filesystem: filesystemName
       resourceId: storageAccountId
     }
     sqlAdministratorLogin: 'sqladmin'
-    sqlAdministratorLoginPassword: '${uniqueString(resourceGroup().id)}P@ssw0rd!'
+    // Note: Provide password via parameter for security best-practice
+    sqlAdministratorLoginPassword: length(sqlAdministratorLoginPassword) > 0 ? sqlAdministratorLoginPassword : '${uniqueString(synapseWorkspaceName, resourceGroup().id)}-TempP@ss1!'
     managedVirtualNetwork: 'default'
     publicNetworkAccess: 'Enabled'
   }
