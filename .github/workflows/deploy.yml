@@ -43,7 +43,7 @@ jobs:
           echo "Registering Azure Resource Providers..."
           
           # Register providers with explicit wait
-          for provider in Microsoft.Storage Microsoft.Synapse Microsoft.KeyVault Microsoft.Network; do
+          for provider in Microsoft.Storage Microsoft.Synapse Microsoft.KeyVault Microsoft.Network Microsoft.Sql; do
             echo "Registering $provider..."
             az provider register --namespace $provider
           done
@@ -55,13 +55,14 @@ jobs:
             SYNAPSE=$(az provider show --namespace Microsoft.Synapse --query "registrationState" -o tsv)
             KEYVAULT=$(az provider show --namespace Microsoft.KeyVault --query "registrationState" -o tsv)
             NETWORK=$(az provider show --namespace Microsoft.Network --query "registrationState" -o tsv)
+            SQL=$(az provider show --namespace Microsoft.Sql --query "registrationState" -o tsv)
             
-            if [ "$STORAGE" = "Registered" ] && [ "$SYNAPSE" = "Registered" ] && [ "$KEYVAULT" = "Registered" ] && [ "$NETWORK" = "Registered" ]; then
+            if [ "$STORAGE" = "Registered" ] && [ "$SYNAPSE" = "Registered" ] && [ "$KEYVAULT" = "Registered" ] && [ "$NETWORK" = "Registered" ] && [ "$SQL" = "Registered" ]; then
               echo "✅ All providers registered successfully"
               break
             fi
             
-            echo "Attempt $i/60: Storage=$STORAGE, Synapse=$SYNAPSE, KeyVault=$KEYVAULT, Network=$NETWORK"
+            echo "Attempt $i/60: Storage=$STORAGE, Synapse=$SYNAPSE, KeyVault=$KEYVAULT, Network=$NETWORK, Sql=$SQL"
             sleep 10
           done
           
@@ -71,6 +72,7 @@ jobs:
           az provider show --namespace Microsoft.Synapse --query "registrationState"
           az provider show --namespace Microsoft.KeyVault --query "registrationState"
           az provider show --namespace Microsoft.Network --query "registrationState"
+          az provider show --namespace Microsoft.Sql --query "registrationState"
 
       - name: Deploy Bicep Infrastructure
         id: deploy
