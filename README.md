@@ -113,6 +113,7 @@ git push origin main
 ```
 
 #### 4. GitHub Actions will automatically:
+- **Register required Azure resource providers** (Microsoft.Storage, Synapse, KeyVault, Network)
 - Deploy all Azure resources (Synapse, ADLS, Key Vault)
 - Upload sample data and schemas to ADLS
 - Import Synapse notebooks and pipelines

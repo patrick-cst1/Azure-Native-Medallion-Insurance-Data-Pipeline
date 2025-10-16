@@ -17,7 +17,8 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     tenantId: subscription().tenantId
     enableRbacAuthorization: true  // Use RBAC instead of access policies
     softDeleteRetentionInDays: 7
-    enablePurgeProtection: false  // Allow purge for dev/test
+    // Note: enablePurgeProtection is omitted - once enabled, it cannot be disabled
+    // Azure will use default behavior based on subscription settings
     networkAcls: {
       defaultAction: 'Allow'
       bypass: 'AzureServices'
