@@ -10,8 +10,6 @@ ENV/
 .venv
 
 # Azure
-.env
-.env.local
 *.bicepparam
 
 # IDE

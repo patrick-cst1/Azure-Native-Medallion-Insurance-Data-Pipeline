@@ -75,25 +75,54 @@ Azure-Native-Medallion-Insurance-Data-Pipeline/
 
 ### Deployment (Fully Automated)
 
-1. **Configure GitHub Secrets**:
-   - `AZURE_CREDENTIALS` (Service Principal JSON)
-   - `AZURE_SUBSCRIPTION_ID`
+#### 1. Create Azure Service Principal
 
-2. **Push to GitHub**:
-   ```bash
-   git push origin main
-   ```
+```bash
+az ad sp create-for-rbac \
+  --name "github-actions-insurance-ml" \
+  --role Contributor \
+  --scopes /subscriptions/{your-subscription-id} \
+  --sdk-auth
+```
 
-3. **GitHub Actions will**:
-   - Deploy all Azure resources (Synapse, ADLS, Key Vault)
-   - Upload sample data and schemas to ADLS
-   - Import Synapse notebooks and pipelines
-   - Create and start daily triggers
+Copy the output JSON (you'll need `clientId`, `clientSecret`, `subscriptionId`, `tenantId`).
 
-4. **Verify**:
-   - Navigate to Azure Portal → Synapse Workspace
-   - Run `master_batch_pipeline` manually (or wait for daily trigger)
-   - Check Delta tables in ADLS: `bronze_*`, `silver_*`, `gold_*`
+#### 2. Configure GitHub Secrets
+
+Navigate to **GitHub Repository → Settings → Secrets and variables → Actions**, then add:
+
+**`AZURE_CREDENTIALS`** (JSON format):
+```json
+{
+  "clientId": "your-client-id",
+  "clientSecret": "your-client-secret",
+  "subscriptionId": "your-subscription-id",
+  "tenantId": "your-tenant-id"
+}
+```
+
+**`AZURE_SUBSCRIPTION_ID`**:
+```
+your-subscription-id
+```
+
+#### 3. Push to GitHub
+
+```bash
+git push origin main
+```
+
+#### 4. GitHub Actions will automatically:
+- Deploy all Azure resources (Synapse, ADLS, Key Vault)
+- Upload sample data and schemas to ADLS
+- Import Synapse notebooks and pipelines
+- Create and start daily triggers
+
+#### 5. Verify Deployment
+
+- Navigate to Azure Portal → Synapse Workspace
+- Run `master_batch_pipeline` manually (or wait for daily trigger at 2:00 UTC)
+- Check Delta tables in ADLS: `bronze_*`, `silver_*`, `gold_*`
 
 ## 🔧 Key Components
 
