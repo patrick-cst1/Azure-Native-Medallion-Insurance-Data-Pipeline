@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       storageAccountName: ${{ steps.deploy.outputs.storageAccountName }}
+      storageAccountId: ${{ steps.deploy.outputs.storageAccountId }}
       synapseWorkspaceName: ${{ steps.deploy.outputs.synapseWorkspaceName }}
       sparkPoolName: ${{ steps.deploy.outputs.sparkPoolName }}
       filesContainerName: ${{ steps.deploy.outputs.filesContainerName }}
@@ -121,6 +122,7 @@ jobs:
             fi
             
             echo "storageAccountName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.storageAccountName.value" -o tsv)" >> $GITHUB_OUTPUT
+            echo "storageAccountId=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.storageAccountId.value" -o tsv)" >> $GITHUB_OUTPUT
             echo "synapseWorkspaceName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.synapseWorkspaceName.value" -o tsv)" >> $GITHUB_OUTPUT
             echo "sparkPoolName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.sparkPoolName.value" -o tsv)" >> $GITHUB_OUTPUT
             echo "filesContainerName=$(az deployment group show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name "$DEPLOYMENT_NAME" --query "properties.outputs.filesContainerName.value" -o tsv)" >> $GITHUB_OUTPUT
@@ -161,6 +163,39 @@ jobs:
           else
             az extension update -n synapse || true
           fi
+
+      - name: Grant SP Data Access to Storage (RBAC)
+        run: |
+          set -e
+          echo "Resolving current Service Principal (used by azure/login)..."
+          APP_ID=$(az account show --query "user.name" -o tsv)
+          if [ -z "$APP_ID" ]; then
+            echo "Unable to resolve current service principal appId from az account show"
+            exit 1
+          fi
+          SP_OBJECT_ID=$(az ad sp show --id "$APP_ID" --query id -o tsv)
+          if [ -z "$SP_OBJECT_ID" ]; then
+            echo "Unable to resolve service principal objectId for $APP_ID"
+            exit 1
+          fi
+          SCOPE="${{ needs.deploy-infrastructure.outputs.storageAccountId }}"
+          echo "Granting 'Storage Blob Data Contributor' to SP ($SP_OBJECT_ID) on scope $SCOPE"
+          az role assignment create \
+            --assignee-object-id "$SP_OBJECT_ID" \
+            --assignee-principal-type ServicePrincipal \
+            --role "Storage Blob Data Contributor" \
+            --scope "$SCOPE" >/dev/null 2>&1 || true
+
+          echo "Waiting for RBAC propagation..."
+          for i in {1..12}; do
+            COUNT=$(az role assignment list --assignee "$SP_OBJECT_ID" --scope "$SCOPE" --query "length([?roleDefinitionName=='Storage Blob Data Contributor'])" -o tsv)
+            echo "Check $i/12: assignments=$COUNT"
+            if [ "$COUNT" != "0" ]; then
+              echo "RBAC role detected. Proceeding."
+              break
+            fi
+            sleep 10
+          done
 
       - name: Upload sample data to ADLS
         run: |
