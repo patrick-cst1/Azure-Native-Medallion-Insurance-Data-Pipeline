@@ -27,7 +27,8 @@ var baseNameClean = replace(baseName, '-', '')  // Remove hyphens for storage/ke
 var storageAccountName = take('${baseNameClean}st${environmentName}${uniqueSuffix}', 24)  // Max 24 chars, alphanumeric only
 var synapseWorkspaceName = '${baseName}-syn-${environmentName}-${uniqueSuffix}'     // Synapse allows hyphens
 var keyVaultName = take('${baseNameClean}kv${environmentName}${uniqueSuffix}', 24)       // Max 24 chars, alphanumeric only
-var sparkPoolName = '${baseName}-spark-${environmentName}'                          // Standard pattern for Spark
+var environmentClean = replace(environmentName, '-', '')                            // Ensure alphanumeric for spark pool
+var sparkPoolName = take('${baseNameClean}spark${environmentClean}', 15)             // Spark pool requires <=15 alphanumeric characters
 
 // Storage Account (ADLS Gen2)
 module storage 'modules/storage.bicep' = {
