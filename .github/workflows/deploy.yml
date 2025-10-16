@@ -147,8 +147,24 @@ jobs:
 
       - name: Install Azure CLI extensions
         run: |
-          az extension add -n storage-blob-preview -y || az extension update -n storage-blob-preview
-          az extension add -n synapse -y || az extension update -n synapse
+          set -e
+          az extension add -n storage-blob-preview --allow-preview || az extension update -n storage-blob-preview || true
+
+          if ! az extension show -n synapse >/dev/null 2>&1; then
+            echo "Installing Synapse CLI extension..."
+            if ! az extension add -n synapse --allow-preview; then
+              SYNAPSE_URL=$(az extension list-available --query "[?name=='synapse'].downloadUrl" -o tsv | head -n 1)
+              if [ -n "$SYNAPSE_URL" ]; then
+                echo "Fallback: installing synapse extension from $SYNAPSE_URL"
+                az extension add --source "$SYNAPSE_URL"
+              else
+                echo "Failed to locate synapse extension download URL"
+                exit 1
+              fi
+            fi
+          else
+            az extension update -n synapse || true
+          fi
 
       - name: Get storage account key
         run: |
@@ -194,7 +210,22 @@ jobs:
 
       - name: Install Azure CLI extensions (synapse)
         run: |
-          az extension add -n synapse -y || az extension update -n synapse
+          set -e
+          if ! az extension show -n synapse >/dev/null 2>&1; then
+            echo "Installing Synapse CLI extension..."
+            if ! az extension add -n synapse --allow-preview; then
+              SYNAPSE_URL=$(az extension list-available --query "[?name=='synapse'].downloadUrl" -o tsv | head -n 1)
+              if [ -n "$SYNAPSE_URL" ]; then
+                echo "Fallback: installing synapse extension from $SYNAPSE_URL"
+                az extension add --source "$SYNAPSE_URL"
+              else
+                echo "Failed to locate synapse extension download URL"
+                exit 1
+              fi
+            fi
+          else
+            az extension update -n synapse || true
+          fi
 
       - name: Setup Python
         uses: actions/setup-python@v4
