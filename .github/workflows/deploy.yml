@@ -149,18 +149,14 @@ jobs:
         run: |
           set -e
           az extension add -n storage-blob-preview --allow-preview || az extension update -n storage-blob-preview || true
+          az config set extension.use_dynamic_install=yes_without_prompt
 
           if ! az extension show -n synapse >/dev/null 2>&1; then
-            echo "Installing Synapse CLI extension..."
-            if ! az extension add -n synapse --allow-preview; then
-              SYNAPSE_URL=$(az extension list-available --query "[?name=='synapse'].downloadUrl" -o tsv | head -n 1)
-              if [ -n "$SYNAPSE_URL" ]; then
-                echo "Fallback: installing synapse extension from $SYNAPSE_URL"
-                az extension add --source "$SYNAPSE_URL"
-              else
-                echo "Failed to locate synapse extension download URL"
-                exit 1
-              fi
+            echo "Attempting to install Synapse CLI extension..."
+            if az extension add -n synapse --allow-preview; then
+              echo "Synapse extension installed from official index."
+            else
+              echo "Warning: Synapse extension not found in official index. Falling back to dynamic installation."
             fi
           else
             az extension update -n synapse || true
@@ -211,17 +207,13 @@ jobs:
       - name: Install Azure CLI extensions (synapse)
         run: |
           set -e
+          az config set extension.use_dynamic_install=yes_without_prompt
           if ! az extension show -n synapse >/dev/null 2>&1; then
-            echo "Installing Synapse CLI extension..."
-            if ! az extension add -n synapse --allow-preview; then
-              SYNAPSE_URL=$(az extension list-available --query "[?name=='synapse'].downloadUrl" -o tsv | head -n 1)
-              if [ -n "$SYNAPSE_URL" ]; then
-                echo "Fallback: installing synapse extension from $SYNAPSE_URL"
-                az extension add --source "$SYNAPSE_URL"
-              else
-                echo "Failed to locate synapse extension download URL"
-                exit 1
-              fi
+            echo "Attempting to install Synapse CLI extension..."
+            if az extension add -n synapse --allow-preview; then
+              echo "Synapse extension installed from official index."
+            else
+              echo "Warning: Synapse extension not found in official index. Falling back to dynamic installation."
             fi
           else
             az extension update -n synapse || true
