@@ -19,13 +19,14 @@ param sparkPoolSize string = 'Small'
 @description('Enable Spark Pool auto-scale')
 param sparkPoolAutoScale bool = true
 
-// Variables
-var uniqueSuffix = uniqueString(resourceGroup().id)
-var storageAccountName = replace('${baseName}st${environmentName}${uniqueSuffix}', '-', '')
-var synapseWorkspaceName = '${baseName}-syn-${environmentName}-${take(uniqueSuffix, 8)}'
-var keyVaultNameRaw = '${baseName}-kv-${environmentName}-${take(uniqueSuffix, 6)}'
-var keyVaultName = replace(take(keyVaultNameRaw, 24), '-', '')
-var sparkPoolName = '${baseName}-spark-${environmentName}'
+// Variables - Standardized Naming Convention
+// Pattern: {baseName}-{resourceType}-{environment}-{uniqueSuffix}
+// All names compliant with Azure naming restrictions (alphanumeric, lengths, etc.)
+var uniqueSuffix = take(uniqueString(resourceGroup().id), 6)
+var storageAccountName = take('${baseName}st${environmentName}${uniqueSuffix}', 24)  // Max 24 chars, alphanumeric only
+var synapseWorkspaceName = '${baseName}-syn-${environmentName}-${uniqueSuffix}'     // Synapse allows hyphens
+var keyVaultName = take('${baseName}kv${environmentName}${uniqueSuffix}', 24)       // Max 24 chars, alphanumeric only
+var sparkPoolName = '${baseName}-spark-${environmentName}'                          // Standard pattern for Spark
 
 // Storage Account (ADLS Gen2)
 module storage 'modules/storage.bicep' = {
