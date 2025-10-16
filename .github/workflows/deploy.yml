@@ -162,20 +162,13 @@ jobs:
             az extension update -n synapse || true
           fi
 
-      - name: Get storage account key
-        run: |
-          echo "ACCOUNT_KEY=$(az storage account keys list \
-            --account-name ${{ needs.deploy-infrastructure.outputs.storageAccountName }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --query \"[0].value\" -o tsv)" >> $GITHUB_ENV
-
       - name: Upload sample data to ADLS
         run: |
           echo "Uploading sample CSV files..."
           az storage fs directory upload \
             --account-name ${{ needs.deploy-infrastructure.outputs.storageAccountName }} \
-            --account-key $ACCOUNT_KEY \
             --file-system ${{ needs.deploy-infrastructure.outputs.filesContainerName }} \
+            --auth-mode login \
             --source ./data/samples \
             --destination samples \
             --recursive
@@ -185,8 +178,8 @@ jobs:
           echo "Uploading YAML schema files..."
           az storage fs directory upload \
             --account-name ${{ needs.deploy-infrastructure.outputs.storageAccountName }} \
-            --account-key $ACCOUNT_KEY \
             --file-system ${{ needs.deploy-infrastructure.outputs.filesContainerName }} \
+            --auth-mode login \
             --source ./config/schemas \
             --destination config/schemas \
             --recursive

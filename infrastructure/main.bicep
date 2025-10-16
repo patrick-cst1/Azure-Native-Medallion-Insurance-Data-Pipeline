@@ -75,6 +75,7 @@ module roles 'modules/roles.bicep' = {
 
 // Outputs
 output storageAccountName string = storage.outputs.storageAccountName
+output storageAccountId string = storage.outputs.storageAccountId
 output synapseWorkspaceName string = synapse.outputs.synapseWorkspaceName
 output keyVaultName string = keyVault.outputs.keyVaultName
 output sparkPoolName string = synapse.outputs.sparkPoolName
