@@ -2,6 +2,32 @@
   "name": "master_batch_pipeline",
   "properties": {
     "description": "Master orchestration for Bronze->Silver->Gold batch processing",
+    "parameters": {
+      "SparkPoolName": {
+        "type": "String",
+        "defaultValue": "insmlsparkdev"
+      },
+      "ExecutorSize": {
+        "type": "String",
+        "defaultValue": "Small"
+      },
+      "DriverSize": {
+        "type": "String",
+        "defaultValue": "Small"
+      },
+      "DynamicAllocationEnabled": {
+        "type": "Bool",
+        "defaultValue": true
+      },
+      "MinExecutors": {
+        "type": "Int",
+        "defaultValue": 2
+      },
+      "MaxExecutors": {
+        "type": "Int",
+        "defaultValue": 4
+      }
+    },
     "activities": [
       {
         "name": "Bronze_Ingestion_Policies",
@@ -16,6 +42,35 @@
           "notebook": {
             "referenceName": "bronze_ingest_policies",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -32,6 +87,35 @@
           "notebook": {
             "referenceName": "bronze_ingest_claims",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -48,6 +132,35 @@
           "notebook": {
             "referenceName": "bronze_ingest_customers",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -64,6 +177,35 @@
           "notebook": {
             "referenceName": "bronze_ingest_agents",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -85,6 +227,35 @@
           "notebook": {
             "referenceName": "silver_clean_policies",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -106,6 +277,35 @@
           "notebook": {
             "referenceName": "silver_clean_claims",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -127,6 +327,35 @@
           "notebook": {
             "referenceName": "silver_clean_customers",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -148,6 +377,35 @@
           "notebook": {
             "referenceName": "silver_clean_agents",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -169,6 +427,35 @@
           "notebook": {
             "referenceName": "gold_create_claims_features",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -194,6 +481,35 @@
           "notebook": {
             "referenceName": "gold_create_customer_features",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -219,6 +535,35 @@
           "notebook": {
             "referenceName": "gold_create_risk_features",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       },
@@ -240,6 +585,35 @@
           "notebook": {
             "referenceName": "gold_create_monthly_claims_summary",
             "type": "NotebookReference"
+          },
+          "sparkPool": {
+            "referenceName": {
+              "value": "@pipeline().parameters.SparkPoolName",
+              "type": "Expression"
+            },
+            "type": "BigDataPoolReference"
+          },
+          "executorSize": {
+            "value": "@pipeline().parameters.ExecutorSize",
+            "type": "Expression"
+          },
+          "driverSize": {
+            "value": "@pipeline().parameters.DriverSize",
+            "type": "Expression"
+          },
+          "sparkConfig": {
+            "spark.dynamicAllocation.enabled": {
+              "value": "@pipeline().parameters.DynamicAllocationEnabled",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.minExecutors": {
+              "value": "@pipeline().parameters.MinExecutors",
+              "type": "Expression"
+            },
+            "spark.dynamicAllocation.maxExecutors": {
+              "value": "@pipeline().parameters.MaxExecutors",
+              "type": "Expression"
+            }
           }
         }
       }
