@@ -247,6 +247,26 @@ jobs:
             az extension update -n synapse || true
           fi
 
+      - name: Grant Synapse RBAC to user (Synapse Administrator)
+        run: |
+          set -e
+          WORKSPACE="${{ needs.deploy-infrastructure.outputs.synapseWorkspaceName }}"
+          USER_OBJECT_ID="${{ secrets.AAD_OBJECT_ID }}"
+
+          if [ -z "$USER_OBJECT_ID" ]; then
+            echo "AAD_OBJECT_ID secret is empty. Skipping Synapse RBAC assignment."
+            exit 0
+          fi
+
+          echo "Assigning 'Synapse Administrator' to ObjectId=$USER_OBJECT_ID on workspace=$WORKSPACE"
+          az synapse role assignment create \
+            --workspace-name "$WORKSPACE" \
+            --role "Synapse Administrator" \
+            --assignee-object-id "$USER_OBJECT_ID" || true
+
+          echo "Waiting briefly for RBAC propagation..."
+          sleep 15
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
