@@ -106,6 +106,16 @@ Navigate to **GitHub Repository → Settings → Secrets and variables → Actio
 your-subscription-id
 ```
 
+**`AAD_OBJECT_ID`** (Your Azure AD Object ID for Synapse Administrator access):
+```
+your-aad-object-id
+```
+
+To find your AAD Object ID:
+```bash
+az ad signed-in-user show --query id -o tsv
+```
+
 #### 3. Push to GitHub
 
 ```bash
@@ -146,7 +156,8 @@ git push origin main
 ### Silver Layer (Cleaned + SCD2)
 - Read Bronze Delta tables
 - Apply YAML schema transformations (type casting, validation)
-- Add SCD Type 2 columns: `effective_from`, `effective_to`, `is_current`
+- Add SCD Type 2 columns: `effective_from`, `effective_to`, `is_current` for change tracking
+- **Note**: Current implementation uses `overwrite` mode with SCD2 columns for change tracking. For full SCD2 history maintenance with version closure, consider implementing `MERGE INTO` strategy in production.
 - Write to Delta: `abfss://tables@<storage>.dfs.core.windows.net/silver/silver_*`
 
 ### Gold Layer (ML Features)
@@ -157,9 +168,9 @@ git push origin main
 ## 🔐 Security
 
 - **Managed Identity**: Synapse Workspace MI accesses ADLS/Key Vault
-- **RBAC**: Least-privilege role assignments
+- **RBAC**: Least-privilege role assignments (Synapse Administrator assigned to AAD_OBJECT_ID)
 - **Secrets**: All credentials stored in Key Vault
-- **Network**: (Optional) Private endpoints for production
+- **Network**: Dev/Test uses open firewall for convenience; Production should restrict to specific IPs or enable Private Endpoints
 
 ## 📝 Configuration
 
