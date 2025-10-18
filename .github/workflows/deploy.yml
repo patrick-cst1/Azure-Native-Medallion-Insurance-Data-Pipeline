@@ -205,7 +205,6 @@ jobs:
             --file-system ${{ needs.deploy-infrastructure.outputs.filesContainerName }} \
             --auth-mode login \
             --source ./data/samples \
-            --destination samples \
             --recursive
 
       - name: Upload schema files to ADLS
@@ -216,7 +215,7 @@ jobs:
             --file-system ${{ needs.deploy-infrastructure.outputs.filesContainerName }} \
             --auth-mode login \
             --source ./config/schemas \
-            --destination config/schemas \
+            --destination config \
             --recursive
 
   deploy-synapse-artifacts:
