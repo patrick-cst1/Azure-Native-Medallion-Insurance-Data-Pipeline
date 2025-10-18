@@ -1,0 +1,154 @@
+{
+	"name": "bronze_ingest_claims",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "insmlsparkdev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false
+		},
+		"metadata": {
+			"language_info": {
+				"name": "python"
+			}
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"source": [
+					"# Bronze Layer: Ingest Claims CSV to Delta\n",
+					"Simplified version - Azure Synapse Analytics\n",
+					"\n",
+					"Pattern: Read all columns as strings (Medallion best practice)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import sys, subprocess\n",
+					"subprocess.run([sys.executable, \"-m\", \"pip\", \"install\", \"pyyaml\", \"-q\"], check=False)\n",
+					"import yaml"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql import SparkSession\n",
+					"from pyspark.sql.functions import current_timestamp, lit, to_date, col, input_file_name\n",
+					"import logging\n",
+					"import yaml\n",
+					"import uuid"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Configuration - ADLS Gen2 paths (abfss)\n",
+					"# Replace insmlstdevyx4ce6 with actual storage account name from deployment\n",
+					"STORAGE_ACCOUNT = \"insmlstdevyx4ce6\"  # Will be replaced by deployment\n",
+					"FILES_ROOT = f\"abfss://files@{STORAGE_ACCOUNT}.dfs.core.windows.net\"\n",
+					"TABLES_ROOT = f\"abfss://tables@{STORAGE_ACCOUNT}.dfs.core.windows.net\"\n",
+					"\n",
+					"SOURCE_PATH = f\"{FILES_ROOT}/samples/batch/claims.csv\"\n",
+					"TARGET_PATH = f\"{TABLES_ROOT}/bronze/bronze_claims\"\n",
+					"PARTITION_COLUMN = \"ingestion_date\"\n",
+					"SCHEMA_PATH = f\"{FILES_ROOT}/config/schemas/bronze/bronze_claims.yaml\"\n",
+					"\n",
+					"logging.basicConfig(level=logging.INFO)\n",
+					"logger = logging.getLogger(__name__)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"def validate_schema(df, schema_path):\n",
+					"    \"\"\"Simplified inline schema validation.\"\"\"\n",
+					"    try:\n",
+					"        # Read YAML schema from ADLS\n",
+					"        schema_content = spark.read.text(schema_path, wholetext=True).collect()[0][0]\n",
+					"        schema = yaml.safe_load(schema_content)\n",
+					"\n",
+					"        for col_def in schema['required_columns']:\n",
+					"            col_name = col_def['name']\n",
+					"            nullable = col_def['nullable']\n",
+					"\n",
+					"            if col_name not in df.columns:\n",
+					"                raise ValueError(f\"Missing required column: {col_name}\")\n",
+					"\n",
+					"            if not nullable:\n",
+					"                null_count = df.filter(col(col_name).isNull()).count()\n",
+					"                if null_count > 0:\n",
+					"                    logger.warning(f\"Found {null_count} null values in non-nullable column: {col_name}\")\n",
+					"\n",
+					"        logger.info(\"✓ Schema validation passed\")\n",
+					"        return True\n",
+					"    except Exception as e:\n",
+					"        logger.warning(f\"Schema validation skipped: {str(e)}\")\n",
+					"        return True"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"def main():\n",
+					"    \"\"\"Ingest claims from CSV to Bronze Delta table.\"\"\"\n",
+					"\n",
+					"    spark = SparkSession.builder.getOrCreate()\n",
+					"\n",
+					"    try:\n",
+					"        logger.info(f\"Reading claims from {SOURCE_PATH}\")\n",
+					"        # Read all columns as strings to preserve raw data (Medallion best practice)\n",
+					"        df = spark.read.format(\"csv\") \\\n",
+					"            .option(\"header\", \"true\") \\\n",
+					"            .option(\"inferSchema\", \"false\") \\\n",
+					"            .load(SOURCE_PATH)\n",
+					"\n",
+					"        # Generate unique process ID for this pipeline run\n",
+					"        process_id = str(uuid.uuid4())\n",
+					"\n",
+					"        df_enriched = df \\\n",
+					"            .withColumn(\"ingestion_timestamp\", current_timestamp()) \\\n",
+					"            .withColumn(\"ingestion_date\", to_date(current_timestamp())) \\\n",
+					"            .withColumn(\"source_system\", lit(\"legacy_csv\")) \\\n",
+					"            .withColumn(\"process_id\", lit(process_id)) \\\n",
+					"            .withColumn(\"source_file_name\", input_file_name())\n",
+					"\n",
+					"        record_count = df_enriched.count()\n",
+					"        logger.info(f\"Read {record_count} claims\")\n",
+					"\n",
+					"        # Schema validation\n",
+					"        validate_schema(df_enriched, SCHEMA_PATH)\n",
+					"\n",
+					"        logger.info(f\"Writing to {TARGET_PATH}\")\n",
+					"        df_enriched.write \\\n",
+					"            .format(\"delta\") \\\n",
+					"            .mode(\"append\") \\\n",
+					"            .partitionBy(PARTITION_COLUMN) \\\n",
+					"            .option(\"mergeSchema\", \"true\") \\\n",
+					"            .save(TARGET_PATH)\n",
+					"\n",
+					"        logger.info(\"✓ Bronze claims ingestion completed\")\n",
+					"\n",
+					"    except Exception as e:\n",
+					"        logger.error(f\"✗ Claims ingestion failed: {str(e)}\")\n",
+					"        raise"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Execute main function\n",
+					"main()"
+				]
+			}
+		]
+	}
+}

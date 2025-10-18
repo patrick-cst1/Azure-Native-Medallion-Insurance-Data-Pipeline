@@ -1,0 +1,10 @@
+{
+	"name": "synapse-ws-sqlOnDemand--insml-syn-dev-yx4ce6",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/236904d6-a81e-41d7-a873-d8bca7f5e526/resourceGroups/rg-insurance-ml-pipeline/providers/Microsoft.Synapse/workspaces/insml-syn-dev-yx4ce6",
+		"groupId": "sqlOnDemand",
+		"fqdns": [
+			"insml-syn-dev-yx4ce6-ondemand.fe88691a-eb6f-433a-811a-5cc3e133c6a5.sql.azuresynapse.net"
+		]
+	}
+}

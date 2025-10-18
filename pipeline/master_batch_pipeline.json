@@ -1,0 +1,729 @@
+{
+	"name": "master_batch_pipeline",
+	"properties": {
+		"description": "Master orchestration for Bronze->Silver->Gold batch processing",
+		"activities": [
+			{
+				"name": "Bronze_Ingestion_Policies",
+				"type": "SynapseNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "bronze_ingest_policies",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Bronze_Ingestion_Claims",
+				"type": "SynapseNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "bronze_ingest_claims",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Bronze_Ingestion_Customers",
+				"type": "SynapseNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "bronze_ingest_customers",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Bronze_Ingestion_Agents",
+				"type": "SynapseNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "bronze_ingest_agents",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Silver_Clean_Policies",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Bronze_Ingestion_Policies",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "silver_clean_policies",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Silver_Clean_Claims",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Bronze_Ingestion_Claims",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "silver_clean_claims",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Silver_Clean_Customers",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Bronze_Ingestion_Customers",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "silver_clean_customers",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Silver_Clean_Agents",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Bronze_Ingestion_Agents",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "silver_clean_agents",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Gold_Claims_Features",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Silver_Clean_Claims",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "gold_create_claims_features",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Gold_Customer_Features",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Silver_Clean_Customers",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Silver_Clean_Policies",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "gold_create_customer_features",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Gold_Risk_Features",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Gold_Claims_Features",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Gold_Customer_Features",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "gold_create_risk_features",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Gold_Monthly_Claims_Summary",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Silver_Clean_Claims",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0:30:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "gold_create_monthly_claims_summary",
+						"type": "NotebookReference"
+					},
+					"sparkPool": {
+						"referenceName": {
+							"value": "@pipeline().parameters.SparkPoolName",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": {
+						"value": "@pipeline().parameters.ExecutorSize",
+						"type": "Expression"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"driverSize": {
+						"value": "@pipeline().parameters.DriverSize",
+						"type": "Expression"
+					},
+					"numExecutors": null,
+					"sparkConfig": {
+						"spark.dynamicAllocation.enabled": {
+							"value": "@pipeline().parameters.DynamicAllocationEnabled",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.minExecutors": {
+							"value": "@pipeline().parameters.MinExecutors",
+							"type": "Expression"
+						},
+						"spark.dynamicAllocation.maxExecutors": {
+							"value": "@pipeline().parameters.MaxExecutors",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SparkPoolName": {
+				"type": "String",
+				"defaultValue": "insmlsparkdev"
+			},
+			"ExecutorSize": {
+				"type": "String",
+				"defaultValue": "Small"
+			},
+			"DriverSize": {
+				"type": "String",
+				"defaultValue": "Small"
+			},
+			"DynamicAllocationEnabled": {
+				"type": "Bool",
+				"defaultValue": true
+			},
+			"MinExecutors": {
+				"type": "Int",
+				"defaultValue": 2
+			},
+			"MaxExecutors": {
+				"type": "Int",
+				"defaultValue": 4
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-10-18T12:24:29Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}
